@@ -36,25 +36,14 @@
       background: #ffffff;
       box-shadow: 2px 0 6px rgba(0, 0, 0, 0.1);
       scroll-behavior: smooth;
-      scrollbar-width: thin;
-      scrollbar-color: #9e9e9e #f0f0f0;
+
+      /* THE_REQUEST 1: hide scrollbar but keep scrolling */
+      scrollbar-width: none;        /* Firefox */
+      -ms-overflow-style: none;     /* IE and old Edge */
     }
+    /* THE_REQUEST 1: hide scrollbar but keep scrolling (WebKit/Blink) */
     .narrative::-webkit-scrollbar {
-      width: 10px;
-    }
-    .narrative::-webkit-scrollbar-track {
-      background: #f0f0f0;
-    }
-    .narrative::-webkit-scrollbar-thumb {
-      background-color: #9e9e9e;
-      border-radius: 8px;
-      border: 2px solid #f0f0f0;
-      min-height: 40px;
-      margin-top: 12px;
-      margin-bottom: 12px;
-    }
-    .narrative::-webkit-scrollbar-thumb:hover {
-      background-color: #757575;
+      display: none;
     }
 
     .narrative-header {
@@ -76,21 +65,30 @@
       padding: 1rem 0;
       border-bottom: 1px solid #eee;
       cursor: pointer;
+      /* THE_REQUEST 3: subtle hover transition */
+      transition: background-color 0.15s ease;
     }
     .chapter:last-child {
       border-bottom: none;
     }
+    /* THE_REQUEST 3: hover highlight in very pale grey */
+    .chapter:hover {
+      background-color: #f7f7f7;
+    }
+
     .chapter h2 {
       margin: 0 0 0.5rem;
       font-size: 1.2rem;
     }
     .chapter .chapter-image {
       width: 100%;
-      height: 160px;
+      /* THE_REQUEST 2: double height (160px -> 320px) */
+      height: 320px;
       margin: 0.5rem 0 0.75rem;
       background-size: cover;
       background-position: center;
-      border-radius: 6px;
+      /* THE_REQUEST 2: square corners */
+      border-radius: 0;
       background-color: #ddd;
     }
     .chapter p {
@@ -99,10 +97,11 @@
       line-height: 1.5;
     }
     .chapter.active h2 {
-      color: #1565c0;
+      color: #030303;
     }
     .chapter.active {
-      background: #f0f6ff;
+      /* keep active state clearly distinct from hover grey */
+      background: #f7f7f7;
     }
     .narrative-spacer {
       height: 20vh;
@@ -153,9 +152,9 @@
     // JSON-style config: only source of content
     // --------------------------------------------------------------------
     const storyConfig = {
-      title: "Ghost ponds",
+      title: "Hedgerow Marathon story map - conceptual demo",
       subtitle:
-        "A simple scrolling story with placeholder text, images, markers, and a Leaflet map.",
+        "A simple scrolling story map tour: geo-located points on a dynamic map, each associated with media comprising of image and text.",
       mapDefaults: {
         center: [52.8, 0.7],
         zoom: 11
@@ -163,68 +162,68 @@
       chapters: [
         {
           id: "chapter1",
-          title: "Chapter 1: Ghost pond",
-          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/5/55/Pond%2C_Edgefield%2C_Norfolk_-_geograph.org.uk_-_1873501.jpg",
+          title: "Hedge 1",
+          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/6/65/Flowering_gorse_in_hedgerow_-_geograph.org.uk_-_1151811.jpg",
           paragraphs: [
-            "Placeholder introducing this ghost pond.",
-            "Ghost ponds in East Anglia are former field ponds that were infilled, often for agriculture, but still leave subtle depressions, damp patches or cropmarks in the landscape."
+
+            "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county."
           ],
           lat: 52.709783,
           lng: 0.580902,
           zoom: 12,
-          markerLabel: "Ghost pond 1"
+          markerLabel: "Hedge 1"
         },
         {
           id: "chapter2",
-          title: "Chapter 2: Ghost pond",
-          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/5/55/Pond%2C_Edgefield%2C_Norfolk_-_geograph.org.uk_-_1873501.jpg",
+          title: "Hedge 2",
+          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/6/69/Hedgerow_separating_fields_-_geograph.org.uk_-_715273.jpg",
           paragraphs: [
-            "Placeholder introducing this ghost pond.",
-            "Ghost ponds in East Anglia are former field ponds that were infilled, often for agriculture, but still leave subtle depressions, damp patches or cropmarks in the landscape."
+
+            "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county."
           ],
           lat: 52.77461,
           lng: 0.604248,
           zoom: 12,
-          markerLabel: "Ghost pond 2"
+          markerLabel: "Hedge 2"
         },
         {
           id: "chapter3",
-          title: "Chapter 3: Ghost pond",
-          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/5/55/Pond%2C_Edgefield%2C_Norfolk_-_geograph.org.uk_-_1873501.jpg",
+          title: "Hedge 3",
+          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/4/4d/Field_and_hedgerow%2C_Harling_-_geograph.org.uk_-_7915932.jpg",
           paragraphs: [
-            "Placeholder introducing this ghost pond.",
-            "Ghost ponds in East Anglia are former field ponds that were infilled, often for agriculture, but still leave subtle depressions, damp patches or cropmarks in the landscape."
+
+            "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county."
           ],
           lat: 52.836439,
           lng: 0.637894,
           zoom: 12,
-          markerLabel: "Ghost pond 3"
+          markerLabel: "Hedge 3"
         },
         {
           id: "chapter4",
-          title: "Chapter 4: Ghost pond",
-          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/5/55/Pond%2C_Edgefield%2C_Norfolk_-_geograph.org.uk_-_1873501.jpg",
+          title: "Hedge 4",
+          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/4/42/Hedgerow_south_of_Paston_Green_-_geograph.org.uk_-_5886102.jpg",
           paragraphs: [
-            "Placeholder introducing this ghost pond.",
-            "Ghost ponds in East Anglia are former field ponds that were infilled, often for agriculture, but still leave subtle depressions, damp patches or cropmarks in the landscape."
+
+            "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county."
           ],
           lat: 52.889897,
           lng: 0.714798,
           zoom: 12,
-          markerLabel: "Ghost pond 4"
+          markerLabel: "Hedge 4"
         },
         {
           id: "chapter5",
-          title: "Chapter 5: Ghost pond",
-          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/5/55/Pond%2C_Edgefield%2C_Norfolk_-_geograph.org.uk_-_1873501.jpg",
+          title: "Hedge 5",
+          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/4/42/Hedgerow_south_of_Paston_Green_-_geograph.org.uk_-_5886102.jpg",
           paragraphs: [
-            "Placeholder introducing this ghost pond.",
-            "Ghost ponds in East Anglia are former field ponds that were infilled, often for agriculture, but still leave subtle depressions, damp patches or cropmarks in the landscape."
+
+            "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county."
           ],
           lat: 52.938764,
           lng: 0.778656,
           zoom: 12,
-          markerLabel: "Ghost pond 5"
+          markerLabel: "Hedge 5"
         }
       ]
     };
