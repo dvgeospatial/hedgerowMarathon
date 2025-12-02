@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simple Leaflet Story Demo with Linked Chapters & Markers</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      color: #222;
+      background: #f5f5f5;
+    }
+
+    .app {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .narrative {
+      width: 40%;
+      max-width: 520px;
+      min-width: 320px;
+      overflow-y: auto;
+      padding: 1.5rem 1.5rem 3rem;
+      background: #ffffff;
+      box-shadow: 2px 0 6px rgba(0, 0, 0, 0.1);
+      scroll-behavior: smooth;
+      scrollbar-width: thin;
+      scrollbar-color: #9e9e9e #f0f0f0;
+    }
+    .narrative::-webkit-scrollbar {
+      width: 10px;
+    }
+    .narrative::-webkit-scrollbar-track {
+      background: #f0f0f0;
+    }
+    .narrative::-webkit-scrollbar-thumb {
+      background-color: #9e9e9e;
+      border-radius: 8px;
+      border: 2px solid #f0f0f0;
+      min-height: 40px;
+      margin-top: 12px;
+      margin-bottom: 12px;
+    }
+    .narrative::-webkit-scrollbar-thumb:hover {
+      background-color: #757575;
+    }
+
+    .narrative-header {
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 0.75rem;
+    }
+    .narrative-header h1 {
+      margin: 0 0 0.25rem;
+      font-size: 1.6rem;
+    }
+    .narrative-header p {
+      margin: 0;
+      font-size: 0.95rem;
+      color: #666;
+    }
+    .chapter {
+      margin-bottom: 2.5rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+    }
+    .chapter:last-child {
+      border-bottom: none;
+    }
+    .chapter h2 {
+      margin: 0 0 0.5rem;
+      font-size: 1.2rem;
+    }
+    .chapter .chapter-image {
+      width: 100%;
+      height: 160px;
+      margin: 0.5rem 0 0.75rem;
+      background-size: cover;
+      background-position: center;
+      border-radius: 6px;
+      background-color: #ddd;
+    }
+    .chapter p {
+      margin: 0 0 0.5rem;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+    .chapter.active h2 {
+      color: #1565c0;
+    }
+    .chapter.active {
+      background: #f0f6ff;
+    }
+    .narrative-spacer {
+      height: 20vh;
+      min-height: 120px;
+      flex: 0 0 auto;
+    }
+    #map {
+      flex: 1;
+      height: 100vh;
+    }
+    @media (max-width: 800px) {
+      .app {
+        flex-direction: column;
+      }
+      .narrative {
+        width: 100%;
+        max-width: none;
+        height: 45vh;
+      }
+      #map {
+        height: 55vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="narrative" id="narrative">
+      <header class="narrative-header">
+        <h1>Demo Story Map</h1>
+        <p>
+          A simple scrolling story with placeholder text, images, markers, and a Leaflet map.
+        </p>
+      </header>
+      <div class="narrative-spacer" aria-hidden="true"></div>
+    </aside>
+    <div id="map"></div>
+  </div>
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+
+  <script>
+    // --------------------------------------------------------------------
+    // JSON-style config: only source of content
+    // --------------------------------------------------------------------
+    const storyConfig = {
+      title: "Ghost ponds",
+      subtitle:
+        "A simple scrolling story with placeholder text, images, markers, and a Leaflet map.",
+      mapDefaults: {
+        center: [52.8, 0.7],
+        zoom: 11
+      },
+      chapters: [
+        {
+          id: "chapter1",
+          title: "Chapter 1: Ghost pond",
+          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/5/55/Pond%2C_Edgefield%2C_Norfolk_-_geograph.org.uk_-_1873501.jpg",
+          paragraphs: [
+            "Placeholder introducing this ghost pond.",
+            "Ghost ponds in East Anglia are former field ponds that were infilled, often for agriculture, but still leave subtle depressions, damp patches or cropmarks in the landscape."
+          ],
+          lat: 52.709783,
+          lng: 0.580902,
+          zoom: 12,
+          markerLabel: "Ghost pond 1"
+        },
+        {
+          id: "chapter2",
+          title: "Chapter 2: Ghost pond",
+          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/5/55/Pond%2C_Edgefield%2C_Norfolk_-_geograph.org.uk_-_1873501.jpg",
+          paragraphs: [
+            "Placeholder introducing this ghost pond.",
+            "Ghost ponds in East Anglia are former field ponds that were infilled, often for agriculture, but still leave subtle depressions, damp patches or cropmarks in the landscape."
+          ],
+          lat: 52.77461,
+          lng: 0.604248,
+          zoom: 12,
+          markerLabel: "Ghost pond 2"
+        },
+        {
+          id: "chapter3",
+          title: "Chapter 3: Ghost pond",
+          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/5/55/Pond%2C_Edgefield%2C_Norfolk_-_geograph.org.uk_-_1873501.jpg",
+          paragraphs: [
+            "Placeholder introducing this ghost pond.",
+            "Ghost ponds in East Anglia are former field ponds that were infilled, often for agriculture, but still leave subtle depressions, damp patches or cropmarks in the landscape."
+          ],
+          lat: 52.836439,
+          lng: 0.637894,
+          zoom: 12,
+          markerLabel: "Ghost pond 3"
+        },
+        {
+          id: "chapter4",
+          title: "Chapter 4: Ghost pond",
+          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/5/55/Pond%2C_Edgefield%2C_Norfolk_-_geograph.org.uk_-_1873501.jpg",
+          paragraphs: [
+            "Placeholder introducing this ghost pond.",
+            "Ghost ponds in East Anglia are former field ponds that were infilled, often for agriculture, but still leave subtle depressions, damp patches or cropmarks in the landscape."
+          ],
+          lat: 52.889897,
+          lng: 0.714798,
+          zoom: 12,
+          markerLabel: "Ghost pond 4"
+        },
+        {
+          id: "chapter5",
+          title: "Chapter 5: Ghost pond",
+          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/5/55/Pond%2C_Edgefield%2C_Norfolk_-_geograph.org.uk_-_1873501.jpg",
+          paragraphs: [
+            "Placeholder introducing this ghost pond.",
+            "Ghost ponds in East Anglia are former field ponds that were infilled, often for agriculture, but still leave subtle depressions, damp patches or cropmarks in the landscape."
+          ],
+          lat: 52.938764,
+          lng: 0.778656,
+          zoom: 12,
+          markerLabel: "Ghost pond 5"
+        }
+      ]
+    };
+
+    // --------------------------------------------------------------------
+    // Apply config to the DOM BEFORE original logic
+    // --------------------------------------------------------------------
+    const narrativeEl = document.getElementById("narrative");
+    const headerTitleEl = narrativeEl.querySelector(".narrative-header h1");
+    const headerSubtitleEl = narrativeEl.querySelector(".narrative-header p");
+    if (headerTitleEl) headerTitleEl.textContent = storyConfig.title;
+    if (headerSubtitleEl) headerSubtitleEl.textContent = storyConfig.subtitle;
+    const spacerEl = narrativeEl.querySelector(".narrative-spacer");
+
+    storyConfig.chapters.forEach((cfg) => {
+      const section = document.createElement("section");
+      section.className = "chapter";
+      section.setAttribute("data-chapter-id", cfg.id);
+
+      const h2 = document.createElement("h2");
+      h2.textContent = cfg.title;
+      section.appendChild(h2);
+
+      const imgDiv = document.createElement("div");
+      imgDiv.className = "chapter-image";
+      imgDiv.style.backgroundImage = `url('${cfg.imageUrl}')`;
+      section.appendChild(imgDiv);
+
+      cfg.paragraphs.forEach((text) => {
+        const p = document.createElement("p");
+        p.textContent = text;
+        section.appendChild(p);
+      });
+
+      narrativeEl.insertBefore(section, spacerEl);
+    });
+
+    const chapterEls = Array.from(document.querySelectorAll(".chapter"));
+
+    const chapters = {};
+    storyConfig.chapters.forEach((cfg) => {
+      chapters[cfg.id] = {
+        center: [cfg.lat, cfg.lng],
+        zoom: cfg.zoom,
+        label: cfg.markerLabel
+      };
+    });
+
+    // --------------------------------------------------------------------
+    // ORIGINAL APP LOGIC (behaviour unchanged except for wheel handling)
+    // --------------------------------------------------------------------
+
+    const map = L.map("map", {
+      center: storyConfig.mapDefaults.center,
+      zoom: storyConfig.mapDefaults.zoom,
+      scrollWheelZoom: false
+    });
+
+    const mapContainer = document.getElementById("map");
+    mapContainer.addEventListener("wheel", (event) => {
+      narrativeEl.scrollTop += event.deltaY;
+    });
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap contributors",
+      maxZoom: 19,
+    }).addTo(map);
+
+    const markers = {};
+    Object.entries(chapters).forEach(([id, cfg]) => {
+      const marker = L.marker(cfg.center)
+        .addTo(map)
+        .bindPopup(`<strong>${cfg.label}</strong>`);
+
+      marker.on("click", () => {
+        const chapterEl = document.querySelector(
+          `.chapter[data-chapter-id="${id}"]`
+        );
+        if (chapterEl) {
+          setActiveChapter(id);
+          scrollChapterIntoView(chapterEl);
+        }
+      });
+
+      markers[id] = marker;
+    });
+
+    let activeChapterId = null;
+
+    function setActiveChapter(chapterId) {
+      if (chapterId === activeChapterId) return;
+      activeChapterId = chapterId;
+
+      chapterEls.forEach((el) => el.classList.remove("active"));
+      const chapterEl = document.querySelector(
+        `.chapter[data-chapter-id="${chapterId}"]`
+      );
+      if (chapterEl) {
+        chapterEl.classList.add("active");
+      }
+
+      const cfg = chapters[chapterId];
+      if (cfg) {
+        map.flyTo(cfg.center, cfg.zoom, {
+          duration: 1.4,
+        });
+      }
+
+      Object.values(markers).forEach((m) => m.closePopup());
+      if (markers[chapterId]) {
+        markers[chapterId].openPopup();
+      }
+    }
+
+    function scrollChapterIntoView(chapterEl) {
+      const containerRect = narrativeEl.getBoundingClientRect();
+      const chapterRect = chapterEl.getBoundingClientRect();
+      const offset =
+        chapterRect.top -
+        containerRect.top -
+        containerRect.height / 2 +
+        chapterRect.height / 2;
+
+      narrativeEl.scrollTop += offset;
+    }
+
+    narrativeEl.addEventListener("scroll", () => {
+      const containerRect = narrativeEl.getBoundingClientRect();
+      const containerCenterY = containerRect.top + containerRect.height / 2;
+
+      let bestChapterId = null;
+      let bestDistance = Infinity;
+
+      chapterEls.forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        const chapterCenterY = rect.top + rect.height / 2;
+
+        if (rect.bottom < containerRect.top || rect.top > containerRect.bottom) {
+          return;
+        }
+
+        const distance = Math.abs(chapterCenterY - containerCenterY);
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          bestChapterId = el.getAttribute("data-chapter-id");
+        }
+      });
+
+      if (bestChapterId) {
+        setActiveChapter(bestChapterId);
+      }
+    });
+
+    chapterEls.forEach((chapter) => {
+      chapter.addEventListener("click", () => {
+        const chapterId = chapter.getAttribute("data-chapter-id");
+        setActiveChapter(chapterId);
+        scrollChapterIntoView(chapter);
+      });
+    });
+
+    setActiveChapter("chapter1");
+  </script>
+</body>
+</html>
