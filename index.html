@@ -309,7 +309,7 @@
     });
 
     // --------------------------------------------------------------------
-    // MAP + MASK + LINE IMPLEMENTATION
+    // MAP + LINE IMPLEMENTATION (MASK REMOVED)
     // --------------------------------------------------------------------
 
     const map = L.map("map", {
@@ -328,74 +328,8 @@
       maxZoom: 19,
     }).addTo(map);
 
-    map.createPane("maskPane");
-    map.getPane("maskPane").style.zIndex = 450;
-
-    const maskRenderer = L.svg({ padding: 1 });
-
-    const boundaryUrl =
-      "https://firebasestorage.googleapis.com/v0/b/naturecitynorwich.firebasestorage.app/o/Assets%2FhedgerowMarathonSimpleLine_buffer.geojson?alt=media&token=b6161307-c07a-4b66-8c8e-8301ba37d733";
-
     const lineUrl =
       "https://firebasestorage.googleapis.com/v0/b/naturecitynorwich.firebasestorage.app/o/Assets%2FhedgerowMarathonSimpleLine.geojson?alt=media&token=06a245dd-6656-4c92-a26e-7574c8549206";
-
-    const boundaryPromise = fetch(boundaryUrl)
-      .then((r) => {
-        if (!r.ok) throw new Error(r.status);
-        return r.json();
-      })
-      .then((geoJsonData) => {
-        const boundaryFeature =
-          geoJsonData.type === "FeatureCollection"
-            ? geoJsonData.features[0]
-            : geoJsonData;
-
-        const boundaryGeom = boundaryFeature.geometry;
-
-        const worldRectangle = [
-          [-180, -90],
-          [-180, 90],
-          [180, 90],
-          [180, -90],
-          [-180, -90]
-        ];
-
-        let maskPolygons;
-        if (boundaryGeom.type === "Polygon") {
-          maskPolygons = [boundaryGeom.coordinates];
-        } else if (boundaryGeom.type === "MultiPolygon") {
-          maskPolygons = boundaryGeom.coordinates;
-        } else {
-          throw new Error("Unsupported geometry for mask");
-        }
-
-        const invertedMaskGeoJson = {
-          type: "Feature",
-          geometry: {
-            type: "MultiPolygon",
-            coordinates: [
-              [worldRectangle],
-              ...maskPolygons
-            ]
-          }
-        };
-
-        L.geoJSON(invertedMaskGeoJson, {
-          style: {
-            fillColor: "white",
-            fillOpacity: 0.85,
-            stroke: false,
-            fillRule: "evenodd",
-            interactive: false
-          },
-          pane: "maskPane",
-          renderer: maskRenderer
-        }).addTo(map);
-
-        const boundaryLayer = L.geoJSON(boundaryFeature);
-        map.fitBounds(boundaryLayer.getBounds());
-      })
-      .catch((err) => console.error("Boundary/mask error:", err));
 
     const linePromise = fetch(lineUrl)
       .then((r) => {
@@ -403,12 +337,14 @@
         return r.json();
       })
       .then((lineGeoJson) => {
-        L.geoJSON(lineGeoJson, {
+        const lineLayer = L.geoJSON(lineGeoJson, {
           style: {
             color: "#ff0000",
             weight: 4
           }
         }).addTo(map);
+        // Fit map to line bounds on startup
+        map.fitBounds(lineLayer.getBounds());
       })
       .catch((err) => console.error("Line error:", err));
 
@@ -417,7 +353,6 @@
       const loaderEl = document.getElementById("loader");
       const appRoot = document.getElementById("app-root");
 
-      // first chapter as visible starting point
       const firstChapter = storyConfig.chapters[0];
       const finalCenter = [firstChapter.lat, firstChapter.lng];
       const finalZoom = firstChapter.zoom;
@@ -426,14 +361,11 @@
 
       function step() {
         if (i >= storyConfig.chapters.length) {
-          // restore to first chapter view (still hidden)
           map.setView(finalCenter, finalZoom, { animate: false });
 
-          // small delay to let final tiles finish
           setTimeout(() => {
             loaderEl.style.display = "none";
             appRoot.classList.add("app-ready");
-            // now map is visible: start story at chapter1 with flyTo
             setActiveChapter(firstChapter.id);
           }, 200);
 
@@ -441,7 +373,6 @@
         }
 
         const ch = storyConfig.chapters[i];
-        // invisible, no animation; solely for tile warm-up
         map.setView([ch.lat, ch.lng], ch.zoom, { animate: false });
         i += 1;
         setTimeout(step, 120);
@@ -450,7 +381,7 @@
       step();
     }
 
-    Promise.all([boundaryPromise, linePromise]).then(() => {
+    linePromise.then(() => {
       warmUpTilesThenShow();
     });
 
@@ -494,7 +425,6 @@
     function setActiveChapter(chapterId) {
       if (chapterId === activeChapterId) return;
 
-      // If a flyTo is in progress, queue the latest requested chapter
       if (isFlying) {
         pendingChapterId = chapterId;
         return;
@@ -571,7 +501,7 @@
       });
     });
 
-    // No initial setActiveChapter call here; first call happens after warm-up.
+    // No initial setActiveChapter here; first call is after warm-up.
   </script>
 </body>
 </html>
