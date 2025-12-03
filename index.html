@@ -25,6 +25,41 @@
       display: flex;
       height: 100vh;
       overflow: hidden;
+      opacity: 0;              /* hidden until warm-up complete */
+      transition: opacity 0.4s ease;
+    }
+
+    .app.app-ready {
+      opacity: 1;
+    }
+
+    /* Fullscreen loader */
+    #loader {
+      position: fixed;
+      inset: 0;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      font-size: 1.1rem;
+      color: #333;
+    }
+
+    .loader-inner {
+      text-align: center;
+    }
+    .loader-spinner {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 4px solid #ddd;
+      border-top-color: #333;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
 
     .narrative {
@@ -37,11 +72,9 @@
       box-shadow: 2px 0 6px rgba(0, 0, 0, 0.1);
       scroll-behavior: smooth;
 
-      /* THE_REQUEST 1: hide scrollbar but keep scrolling */
-      scrollbar-width: none;        /* Firefox */
-      -ms-overflow-style: none;     /* IE and old Edge */
+      scrollbar-width: none;
+      -ms-overflow-style: none;
     }
-    /* THE_REQUEST 1: hide scrollbar but keep scrolling (WebKit/Blink) */
     .narrative::-webkit-scrollbar {
       display: none;
     }
@@ -65,13 +98,11 @@
       padding: 1rem 0;
       border-bottom: 1px solid #eee;
       cursor: pointer;
-      /* THE_REQUEST 3: subtle hover transition */
       transition: background-color 0.15s ease;
     }
     .chapter:last-child {
       border-bottom: none;
     }
-    /* THE_REQUEST 3: hover highlight in very pale grey */
     .chapter:hover {
       background-color: #f7f7f7;
     }
@@ -82,12 +113,10 @@
     }
     .chapter .chapter-image {
       width: 100%;
-      /* THE_REQUEST 2: double height (160px -> 320px) */
       height: 320px;
       margin: 0.5rem 0 0.75rem;
       background-size: cover;
       background-position: center;
-      /* THE_REQUEST 2: square corners */
       border-radius: 0;
       background-color: #ddd;
     }
@@ -100,7 +129,6 @@
       color: #030303;
     }
     .chapter.active {
-      /* keep active state clearly distinct from hover grey */
       background: #f7f7f7;
     }
     .narrative-spacer {
@@ -128,7 +156,15 @@
   </style>
 </head>
 <body>
-  <div class="app">
+  <!-- Loading overlay -->
+  <div id="loader">
+    <div class="loader-inner">
+      <div class="loader-spinner"></div>
+      <div>Preparing map…</div>
+    </div>
+  </div>
+
+  <div class="app" id="app-root">
     <aside class="narrative" id="narrative">
       <header class="narrative-header">
         <h1>Demo Story Map</h1>
@@ -165,10 +201,8 @@
           title: "Hedge 1",
           imageUrl: "https://upload.wikimedia.org/wikipedia/commons/6/65/Flowering_gorse_in_hedgerow_-_geograph.org.uk_-_1151811.jpg",
           paragraphs: [
-
             "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
-
-"Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
+            "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
           ],
           lat: 52.709783,
           lng: 0.580902,
@@ -180,10 +214,8 @@
           title: "Hedge 2",
           imageUrl: "https://upload.wikimedia.org/wikipedia/commons/6/69/Hedgerow_separating_fields_-_geograph.org.uk_-_715273.jpg",
           paragraphs: [
-
             "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
-
-"Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
+            "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
           ],
           lat: 52.77461,
           lng: 0.604248,
@@ -195,10 +227,8 @@
           title: "Hedge 3",
           imageUrl: "https://upload.wikimedia.org/wikipedia/commons/4/4d/Field_and_hedgerow%2C_Harling_-_geograph.org.uk_-_7915932.jpg",
           paragraphs: [
-
             "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
-
-"Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
+            "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
           ],
           lat: 52.836439,
           lng: 0.637894,
@@ -210,10 +240,8 @@
           title: "Hedge 4",
           imageUrl: "https://upload.wikimedia.org/wikipedia/commons/4/42/Hedgerow_south_of_Paston_Green_-_geograph.org.uk_-_5886102.jpg",
           paragraphs: [
-
             "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
-
-"Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
+            "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
           ],
           lat: 52.889897,
           lng: 0.714798,
@@ -225,10 +253,8 @@
           title: "Hedge 5",
           imageUrl: "https://upload.wikimedia.org/wikipedia/commons/e/eb/Neatly_trimmed_hedgerows_-_geograph.org.uk_-_615043.jpg",
           paragraphs: [
-
             "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
-
-"Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
+            "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
           ],
           lat: 52.938764,
           lng: 0.778656,
@@ -283,32 +309,29 @@
     });
 
     // --------------------------------------------------------------------
-    // ORIGINAL APP LOGIC (behaviour unchanged except for map integration)
+    // MAP + MASK + LINE IMPLEMENTATION
     // --------------------------------------------------------------------
 
-    // Map instance: keep scrollWheelZoom false and existing defaults
     const map = L.map("map", {
       center: storyConfig.mapDefaults.center,
       zoom: storyConfig.mapDefaults.zoom,
       scrollWheelZoom: false
     });
 
-    // Custom wheel handler to scroll narrative
     const mapContainer = document.getElementById("map");
     mapContainer.addEventListener("wheel", (event) => {
       narrativeEl.scrollTop += event.deltaY;
     });
 
-    // Base map tile layer (OpenStreetMap)
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "&copy; OpenStreetMap contributors",
       maxZoom: 19,
     }).addTo(map);
 
-    // --- NEW: mask pane and GeoJSON URLs (from THE_ROUTE_CODE) ---
-
     map.createPane("maskPane");
     map.getPane("maskPane").style.zIndex = 450;
+
+    const maskRenderer = L.svg({ padding: 1 });
 
     const boundaryUrl =
       "https://firebasestorage.googleapis.com/v0/b/naturecitynorwich.firebasestorage.app/o/Assets%2FhedgerowMarathonSimpleLine_buffer.geojson?alt=media&token=b6161307-c07a-4b66-8c8e-8301ba37d733";
@@ -316,8 +339,7 @@
     const lineUrl =
       "https://firebasestorage.googleapis.com/v0/b/naturecitynorwich.firebasestorage.app/o/Assets%2FhedgerowMarathonSimpleLine.geojson?alt=media&token=06a245dd-6656-4c92-a26e-7574c8549206";
 
-    // Fetch boundary, build inverted mask, and fit bounds
-    fetch(boundaryUrl)
+    const boundaryPromise = fetch(boundaryUrl)
       .then((r) => {
         if (!r.ok) throw new Error(r.status);
         return r.json();
@@ -366,7 +388,8 @@
             fillRule: "evenodd",
             interactive: false
           },
-          pane: "maskPane"
+          pane: "maskPane",
+          renderer: maskRenderer
         }).addTo(map);
 
         const boundaryLayer = L.geoJSON(boundaryFeature);
@@ -374,8 +397,7 @@
       })
       .catch((err) => console.error("Boundary/mask error:", err));
 
-    // Fetch and add the line GeoJSON
-    fetch(lineUrl)
+    const linePromise = fetch(lineUrl)
       .then((r) => {
         if (!r.ok) throw new Error(r.status);
         return r.json();
@@ -390,8 +412,50 @@
       })
       .catch((err) => console.error("Line error:", err));
 
+    // Warm up tiles for all chapter views (invisible to user)
+    function warmUpTilesThenShow() {
+      const loaderEl = document.getElementById("loader");
+      const appRoot = document.getElementById("app-root");
+
+      // first chapter as visible starting point
+      const firstChapter = storyConfig.chapters[0];
+      const finalCenter = [firstChapter.lat, firstChapter.lng];
+      const finalZoom = firstChapter.zoom;
+
+      let i = 0;
+
+      function step() {
+        if (i >= storyConfig.chapters.length) {
+          // restore to first chapter view (still hidden)
+          map.setView(finalCenter, finalZoom, { animate: false });
+
+          // small delay to let final tiles finish
+          setTimeout(() => {
+            loaderEl.style.display = "none";
+            appRoot.classList.add("app-ready");
+            // now map is visible: start story at chapter1 with flyTo
+            setActiveChapter(firstChapter.id);
+          }, 200);
+
+          return;
+        }
+
+        const ch = storyConfig.chapters[i];
+        // invisible, no animation; solely for tile warm-up
+        map.setView([ch.lat, ch.lng], ch.zoom, { animate: false });
+        i += 1;
+        setTimeout(step, 120);
+      }
+
+      step();
+    }
+
+    Promise.all([boundaryPromise, linePromise]).then(() => {
+      warmUpTilesThenShow();
+    });
+
     // --------------------------------------------------------------------
-    // Markers and chapter/map interaction (unchanged)
+    // MARKERS + STORY INTERACTION (ALWAYS ANIMATED)
     // --------------------------------------------------------------------
 
     const markers = {};
@@ -415,8 +479,27 @@
 
     let activeChapterId = null;
 
+    let isFlying = false;
+    let pendingChapterId = null;
+
+    map.on("moveend", () => {
+      isFlying = false;
+      if (pendingChapterId) {
+        const nextId = pendingChapterId;
+        pendingChapterId = null;
+        setActiveChapter(nextId);
+      }
+    });
+
     function setActiveChapter(chapterId) {
       if (chapterId === activeChapterId) return;
+
+      // If a flyTo is in progress, queue the latest requested chapter
+      if (isFlying) {
+        pendingChapterId = chapterId;
+        return;
+      }
+
       activeChapterId = chapterId;
 
       chapterEls.forEach((el) => el.classList.remove("active"));
@@ -429,8 +512,9 @@
 
       const cfg = chapters[chapterId];
       if (cfg) {
+        isFlying = true;
         map.flyTo(cfg.center, cfg.zoom, {
-          duration: 1.4,
+          duration: 1.0
         });
       }
 
@@ -487,7 +571,7 @@
       });
     });
 
-    setActiveChapter("chapter1");
+    // No initial setActiveChapter call here; first call happens after warm-up.
   </script>
 </body>
 </html>
