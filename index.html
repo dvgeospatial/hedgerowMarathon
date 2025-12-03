@@ -37,10 +37,11 @@
       box-shadow: 2px 0 6px rgba(0, 0, 0, 0.1);
       scroll-behavior: smooth;
 
-      /* hide scrollbar but keep scrolling */
+      /* THE_REQUEST 1: hide scrollbar but keep scrolling */
       scrollbar-width: none;        /* Firefox */
       -ms-overflow-style: none;     /* IE and old Edge */
     }
+    /* THE_REQUEST 1: hide scrollbar but keep scrolling (WebKit/Blink) */
     .narrative::-webkit-scrollbar {
       display: none;
     }
@@ -64,11 +65,13 @@
       padding: 1rem 0;
       border-bottom: 1px solid #eee;
       cursor: pointer;
+      /* THE_REQUEST 3: subtle hover transition */
       transition: background-color 0.15s ease;
     }
     .chapter:last-child {
       border-bottom: none;
     }
+    /* THE_REQUEST 3: hover highlight in very pale grey */
     .chapter:hover {
       background-color: #f7f7f7;
     }
@@ -79,10 +82,12 @@
     }
     .chapter .chapter-image {
       width: 100%;
+      /* THE_REQUEST 2: double height (160px -> 320px) */
       height: 320px;
       margin: 0.5rem 0 0.75rem;
       background-size: cover;
       background-position: center;
+      /* THE_REQUEST 2: square corners */
       border-radius: 0;
       background-color: #ddd;
     }
@@ -95,6 +100,7 @@
       color: #030303;
     }
     .chapter.active {
+      /* keep active state clearly distinct from hover grey */
       background: #f7f7f7;
     }
     .narrative-spacer {
@@ -159,8 +165,10 @@
           title: "Hedge 1",
           imageUrl: "https://upload.wikimedia.org/wikipedia/commons/6/65/Flowering_gorse_in_hedgerow_-_geograph.org.uk_-_1151811.jpg",
           paragraphs: [
+
             "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
-            "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
+
+"Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
           ],
           lat: 52.709783,
           lng: 0.580902,
@@ -172,8 +180,10 @@
           title: "Hedge 2",
           imageUrl: "https://upload.wikimedia.org/wikipedia/commons/6/69/Hedgerow_separating_fields_-_geograph.org.uk_-_715273.jpg",
           paragraphs: [
+
             "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
-            "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
+
+"Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
           ],
           lat: 52.77461,
           lng: 0.604248,
@@ -185,8 +195,10 @@
           title: "Hedge 3",
           imageUrl: "https://upload.wikimedia.org/wikipedia/commons/4/4d/Field_and_hedgerow%2C_Harling_-_geograph.org.uk_-_7915932.jpg",
           paragraphs: [
+
             "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
-            "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
+
+"Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
           ],
           lat: 52.836439,
           lng: 0.637894,
@@ -198,8 +210,10 @@
           title: "Hedge 4",
           imageUrl: "https://upload.wikimedia.org/wikipedia/commons/4/42/Hedgerow_south_of_Paston_Green_-_geograph.org.uk_-_5886102.jpg",
           paragraphs: [
+
             "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
-            "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
+
+"Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
           ],
           lat: 52.889897,
           lng: 0.714798,
@@ -211,8 +225,10 @@
           title: "Hedge 5",
           imageUrl: "https://upload.wikimedia.org/wikipedia/commons/e/eb/Neatly_trimmed_hedgerows_-_geograph.org.uk_-_615043.jpg",
           paragraphs: [
+
             "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
-            "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
+
+"Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
           ],
           lat: 52.938764,
           lng: 0.778656,
@@ -267,32 +283,32 @@
     });
 
     // --------------------------------------------------------------------
-    // MAP + MASK + LINE IMPLEMENTATION
+    // ORIGINAL APP LOGIC (behaviour unchanged except for map integration)
     // --------------------------------------------------------------------
 
+    // Map instance: keep scrollWheelZoom false and existing defaults
     const map = L.map("map", {
       center: storyConfig.mapDefaults.center,
       zoom: storyConfig.mapDefaults.zoom,
       scrollWheelZoom: false
     });
 
+    // Custom wheel handler to scroll narrative
     const mapContainer = document.getElementById("map");
     mapContainer.addEventListener("wheel", (event) => {
       narrativeEl.scrollTop += event.deltaY;
     });
 
-    // Base OSM tiles
+    // Base map tile layer (OpenStreetMap)
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "&copy; OpenStreetMap contributors",
       maxZoom: 19,
     }).addTo(map);
 
-    // Custom pane for mask, on top of tiles
+    // --- NEW: mask pane and GeoJSON URLs (from THE_ROUTE_CODE) ---
+
     map.createPane("maskPane");
     map.getPane("maskPane").style.zIndex = 450;
-
-    // SVG renderer with padding to reduce flicker on pan/zoom
-    const maskRenderer = L.svg({ padding: 1 }); // increase padding if needed
 
     const boundaryUrl =
       "https://firebasestorage.googleapis.com/v0/b/naturecitynorwich.firebasestorage.app/o/Assets%2FhedgerowMarathonSimpleLine_buffer.geojson?alt=media&token=b6161307-c07a-4b66-8c8e-8301ba37d733";
@@ -300,7 +316,7 @@
     const lineUrl =
       "https://firebasestorage.googleapis.com/v0/b/naturecitynorwich.firebasestorage.app/o/Assets%2FhedgerowMarathonSimpleLine.geojson?alt=media&token=06a245dd-6656-4c92-a26e-7574c8549206";
 
-    // Boundary + inverted mask
+    // Fetch boundary, build inverted mask, and fit bounds
     fetch(boundaryUrl)
       .then((r) => {
         if (!r.ok) throw new Error(r.status);
@@ -350,8 +366,7 @@
             fillRule: "evenodd",
             interactive: false
           },
-          pane: "maskPane",
-          renderer: maskRenderer
+          pane: "maskPane"
         }).addTo(map);
 
         const boundaryLayer = L.geoJSON(boundaryFeature);
@@ -359,7 +374,7 @@
       })
       .catch((err) => console.error("Boundary/mask error:", err));
 
-    // Line overlay
+    // Fetch and add the line GeoJSON
     fetch(lineUrl)
       .then((r) => {
         if (!r.ok) throw new Error(r.status);
@@ -376,7 +391,7 @@
       .catch((err) => console.error("Line error:", err));
 
     // --------------------------------------------------------------------
-    // MARKERS + STORY INTERACTION (unchanged)
+    // Markers and chapter/map interaction (unchanged)
     // --------------------------------------------------------------------
 
     const markers = {};
