@@ -400,7 +400,7 @@
       center: storyConfig.mapDefaults.center,
       zoom: storyConfig.mapDefaults.zoom,
       scrollWheelZoom: false,
-      preferCanvas: true // UPDATED for canvas rendering [web:21][web:12]
+      preferCanvas: true // canvas renderer for performance [web:21][web:12]
     });
 
     const mapContainer = document.getElementById("map");
@@ -413,15 +413,17 @@
       maxZoom: 19,
     }).addTo(map);
 
-    // ADDED for line layer: load GeoJSON from Firebase URL
+    // Load route line once from Firebase URL and keep as a static layer
     const lineUrl = "https://firebasestorage.googleapis.com/v0/b/naturecitynorwich.firebasestorage.app/o/Assets%2FhedgerowMarathonSimpleLine.geojson?alt=media&token=06a245dd-6656-4c92-a26e-7574c8549206";
 
-    const lineRenderer = L.canvas(); // ADDED for line layer [web:21][web:12]
+    const lineRenderer = L.canvas(); // dedicated canvas renderer [web:21][web:12]
+    let routeLayer = null;
+    let chapterBounds = {}; // per-chapter bounds for flyToBounds
 
-    fetch(lineUrl) // ADDED for line layer
+    fetch(lineUrl)
       .then(response => response.json())
       .then(routeLines => {
-        L.geoJSON(routeLines, {
+        routeLayer = L.geoJSON(routeLines, {
           style: {
             color: "#ff6600",
             weight: 3,
@@ -433,6 +435,21 @@
           noClip: false,
           renderer: lineRenderer
         }).addTo(map);
+
+        // Compute overall route bounds and simple per-chapter bounds
+        const routeBounds = routeLayer.getBounds();
+        Object.entries(chapters).forEach(([id, cfg]) => {
+          // Small bounds around each chapter center as a fallback
+          const padding = 0.01;
+          const b = L.latLngBounds(
+            [cfg.center[0] - padding, cfg.center[1] - padding],
+            [cfg.center[0] + padding, cfg.center[1] + padding]
+          );
+          chapterBounds[id] = b;
+        });
+
+        // Optionally ensure initial view shows the whole route if you prefer:
+        // map.fitBounds(routeBounds);
       })
       .catch(err => {
         console.error("Error loading route GeoJSON:", err);
@@ -494,13 +511,35 @@
 
     let activeChapterId = null;
 
+    // Helper to decide whether two chapters are "far apart"
+    function isFarMove(fromCenter, toCenter) {
+      if (!fromCenter || !toCenter) return false;
+      const dLat = fromCenter[0] - toCenter[0];
+      const dLng = fromCenter[1] - toCenter[1];
+      const dist = Math.sqrt(dLat * dLat + dLng * dLng);
+      return dist > 0.05; // tweak threshold as needed
+    }
+
     function setActiveChapter(chapterId) {
       if (chapterId === activeChapterId) return;
+
+      const previousId = activeChapterId;
       activeChapterId = chapterId;
 
       const cfg = chapters[chapterId];
       if (cfg) {
-        map.flyTo(cfg.center, cfg.zoom, { duration: 1.4 });
+        const prevCfg = previousId ? chapters[previousId] : null;
+        const far = prevCfg && isFarMove(prevCfg.center, cfg.center);
+
+        if (far && chapterBounds[chapterId]) {
+          // For big jumps, use flyToBounds for smoother long animation [web:108]
+          map.flyToBounds(chapterBounds[chapterId], {
+            duration: 1.6
+          });
+        } else {
+          // For nearby moves, use flyTo center/zoom
+          map.flyTo(cfg.center, cfg.zoom, { duration: 1.4 });
+        }
       }
 
       Object.values(markers).forEach((m) => m.closePopup());
@@ -513,6 +552,7 @@
       const cfg = chapters[chapterId];
       if (!cfg) return;
 
+      // Hover uses a small zoom delta; keep using flyTo for responsiveness
       map.flyTo(cfg.center, storyConfig.mapDefaults.zoom, { duration: 1.0 });
 
       Object.values(markers).forEach((m) => m.closePopup());
