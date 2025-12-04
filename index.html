@@ -36,12 +36,9 @@
       background: #ffffff;
       box-shadow: 2px 0 6px rgba(0, 0, 0, 0.1);
       scroll-behavior: smooth;
-
-      /* THE_REQUEST 1: hide scrollbar but keep scrolling */
-      scrollbar-width: none;        /* Firefox */
-      -ms-overflow-style: none;     /* IE and old Edge */
+      scrollbar-width: none;
+      -ms-overflow-style: none;
     }
-    /* THE_REQUEST 1: hide scrollbar but keep scrolling (WebKit/Blink) */
     .narrative::-webkit-scrollbar {
       display: none;
     }
@@ -60,58 +57,104 @@
       font-size: 0.95rem;
       color: #666;
     }
-    .chapter {
-      margin-bottom: 2.5rem;
-      padding: 1rem 0;
-      border-bottom: 1px solid #eee;
-      cursor: pointer;
-      /* THE_REQUEST 3: subtle hover transition */
-      transition: background-color 0.15s ease;
-    }
-    .chapter:last-child {
-      border-bottom: none;
-    }
-    /* THE_REQUEST 3: hover highlight in very pale grey */
-    .chapter:hover {
-      background-color: #f7f7f7;
-    }
 
-    .chapter h2 {
-      margin: 0 0 0.5rem;
-      font-size: 1.2rem;
+    /* Thumbnail grid container and items */
+    .thumbnail-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin: 1rem 0 1.5rem;
     }
-    .chapter .chapter-image {
+    .thumbnail {
+      cursor: pointer;
+      background: #fafafa;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow 0.15s ease, transform 0.15s ease;
+    }
+    .thumbnail:hover {
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      transform: translateY(-2px);
+    }
+    .thumbnail-image {
       width: 100%;
-      /* THE_REQUEST 2: double height (160px -> 320px) */
-      height: 320px;
-      margin: 0.5rem 0 0.75rem;
+      aspect-ratio: 4 / 3;
       background-size: cover;
       background-position: center;
-      /* THE_REQUEST 2: square corners */
-      border-radius: 0;
       background-color: #ddd;
+      flex-shrink: 0;
     }
-    .chapter p {
+    .thumbnail-meta {
+      padding: 0.4rem 0.5rem 0.6rem;
+    }
+    .thumbnail-keystone {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: #555;
+      margin-bottom: 0.2rem;
+    }
+    .thumbnail-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      line-height: 1.3;
+      color: #222;
+    }
+
+    /* Full chapter view container toggled from thumbnails */
+    .chapter-detail {
+      display: none;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 1rem;
+    }
+    .chapter-detail.active {
+      display: block;
+    }
+    .chapter-detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .chapter-detail-header h2 {
+      margin: 0;
+      font-size: 1.1rem;
+    }
+    .chapter-detail-close {
+      padding: 0.25rem 0.6rem;
+      font-size: 0.8rem;
+      border-radius: 999px;
+      border: 1px solid #ccc;
+      background: #f7f7f7;
+      cursor: pointer;
+    }
+    .chapter-detail-close:hover {
+      background: #eee;
+    }
+    .chapter-detail-image {
+      width: 100%;
+      height: 320px;
+      background-size: cover;
+      background-position: center;
+      background-color: #ddd;
+      margin-bottom: 0.75rem;
+    }
+    .chapter-detail p {
       margin: 0 0 0.5rem;
       font-size: 0.95rem;
       line-height: 1.5;
     }
-    .chapter.active h2 {
-      color: #030303;
-    }
-    .chapter.active {
-      /* keep active state clearly distinct from hover grey */
-      background: #f7f7f7;
-    }
-    .narrative-spacer {
-      height: 20vh;
-      min-height: 120px;
-      flex: 0 0 auto;
-    }
+
     #map {
       flex: 1;
       height: 100vh;
     }
+
     @media (max-width: 800px) {
       .app {
         flex-direction: column;
@@ -123,6 +166,9 @@
       }
       #map {
         height: 55vh;
+      }
+      .thumbnail-grid {
+        grid-template-columns: repeat(2, 1fr);
       }
     }
   </style>
@@ -136,7 +182,12 @@
           A simple scrolling story with placeholder text, images, markers, and a Leaflet map.
         </p>
       </header>
-      <div class="narrative-spacer" aria-hidden="true"></div>
+
+      <!-- Thumbnail grid + detail view only; no spacer -->
+      <div id="thumbnail-container">
+        <div id="thumbnail-grid" class="thumbnail-grid"></div>
+        <section id="chapter-detail" class="chapter-detail" aria-live="polite"></section>
+      </div>
     </aside>
     <div id="map"></div>
   </div>
@@ -148,9 +199,6 @@
   ></script>
 
   <script>
-    // --------------------------------------------------------------------
-    // JSON-style config: only source of content
-    // --------------------------------------------------------------------
     const storyConfig = {
       title: "Hedgerow Marathon story map - conceptual demo",
       subtitle:
@@ -162,129 +210,194 @@
       chapters: [
         {
           id: "chapter1",
+          keystone:"Stories from Farmers and Landowners",
           title: "Hedge 1",
           imageUrl: "https://upload.wikimedia.org/wikipedia/commons/6/65/Flowering_gorse_in_hedgerow_-_geograph.org.uk_-_1151811.jpg",
           paragraphs: [
-
             "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
-
-"Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
+            "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
           ],
-          lat: 52.709783,
-          lng: 0.580902,
+          lat: 52.772509,
+          lng: 0.624161,
           zoom: 12,
           markerLabel: "Hedge 1"
         },
         {
           id: "chapter2",
+          keystone:"Hedgerow Species",
           title: "Hedge 2",
-          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/6/69/Hedgerow_separating_fields_-_geograph.org.uk_-_715273.jpg",
+          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/e/eb/Neatly_trimmed_hedgerows_-_geograph.org.uk_-_615043.jpg",
           paragraphs: [
-
             "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
-
-"Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
+            "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
           ],
-          lat: 52.77461,
-          lng: 0.604248,
+          lat: 52.812357,
+          lng: 0.632401,
           zoom: 12,
           markerLabel: "Hedge 2"
         },
         {
           id: "chapter3",
+          keystone:"Hedgerow Species",
           title: "Hedge 3",
-          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/4/4d/Field_and_hedgerow%2C_Harling_-_geograph.org.uk_-_7915932.jpg",
+          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/e/eb/Neatly_trimmed_hedgerows_-_geograph.org.uk_-_615043.jpg",
           paragraphs: [
-
             "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
-
-"Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
+            "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
           ],
-          lat: 52.836439,
-          lng: 0.637894,
+          lat: 52.821898,
+          lng: 0.603561,
           zoom: 12,
           markerLabel: "Hedge 3"
         },
         {
           id: "chapter4",
+          keystone:"Stories from Farmers and Landowners",
           title: "Hedge 4",
-          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/4/42/Hedgerow_south_of_Paston_Green_-_geograph.org.uk_-_5886102.jpg",
+          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/6/69/Hedgerow_separating_fields_-_geograph.org.uk_-_715273.jpg",
           paragraphs: [
-
             "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
-
-"Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
+            "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
           ],
-          lat: 52.889897,
-          lng: 0.714798,
+          lat: 52.845535,
+          lng: 0.602188,
           zoom: 12,
           markerLabel: "Hedge 4"
         },
         {
           id: "chapter5",
+          keystone:"Hedgerow Species",
           title: "Hedge 5",
           imageUrl: "https://upload.wikimedia.org/wikipedia/commons/e/eb/Neatly_trimmed_hedgerows_-_geograph.org.uk_-_615043.jpg",
           paragraphs: [
-
             "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
-
-"Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
+            "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
           ],
-          lat: 52.938764,
-          lng: 0.778656,
+          lat: 52.864187,
+          lng: 0.651627,
           zoom: 12,
           markerLabel: "Hedge 5"
+        },
+        {
+          id: "chapter6",
+          keystone:"Hedgerow Management",
+          title: "Hedge 6",
+          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/4/4d/Field_and_hedgerow%2C_Harling_-_geograph.org.uk_-_7915932.jpg",
+          paragraphs: [
+            "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
+            "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
+          ],
+          lat: 52.875374,
+          lng: 0.681839,
+          zoom: 12,
+          markerLabel: "Hedge 6"
+        },
+        {
+          id: "chapter7",
+          keystone:"Hedgerow Species",
+          title: "Hedge 7",
+          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/e/eb/Neatly_trimmed_hedgerows_-_geograph.org.uk_-_615043.jpg",
+          paragraphs: [
+            "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
+            "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
+          ],
+          lat: 52.910161,
+          lng: 0.695572,
+          zoom: 12,
+          markerLabel: "Hedge 7"
+        },
+        {
+          id: "chapter8",
+          keystone:"Hedgerow Management",
+          title: "Hedge 8",
+          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/4/42/Hedgerow_south_of_Paston_Green_-_geograph.org.uk_-_5886102.jpg",
+          paragraphs: [
+            "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
+            "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
+          ],
+          lat: 52.92175,
+          lng: 0.725098,
+          zoom: 12,
+          markerLabel: "Hedge 8"
+        },
+        {
+          id: "chapter9",
+          keystone:"Hedgerow Species",
+          title: "Hedge 9",
+          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/e/eb/Neatly_trimmed_hedgerows_-_geograph.org.uk_-_615043.jpg",
+          paragraphs: [
+            "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
+            "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
+          ],
+          lat: 52.946987,
+          lng: 0.74295,
+          zoom: 12,
+          markerLabel: "Hedge 9"
+        },
+        {
+          id: "chapter10",
+          keystone:"Hedgerow Management",
+          title: "Hedge 10",
+          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/e/eb/Neatly_trimmed_hedgerows_-_geograph.org.uk_-_615043.jpg",
+          paragraphs: [
+            "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
+            "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
+          ],
+          lat: 52.963552,
+          lng: 0.75737,
+          zoom: 12,
+          markerLabel: "Hedge 10"
         }
       ]
     };
 
-    // --------------------------------------------------------------------
-    // Apply config to the DOM BEFORE original logic
-    // --------------------------------------------------------------------
     const narrativeEl = document.getElementById("narrative");
     const headerTitleEl = narrativeEl.querySelector(".narrative-header h1");
     const headerSubtitleEl = narrativeEl.querySelector(".narrative-header p");
     if (headerTitleEl) headerTitleEl.textContent = storyConfig.title;
     if (headerSubtitleEl) headerSubtitleEl.textContent = storyConfig.subtitle;
-    const spacerEl = narrativeEl.querySelector(".narrative-spacer");
 
+    const thumbnailGridEl = document.getElementById("thumbnail-grid");
+    const chapterDetailEl = document.getElementById("chapter-detail");
+
+    // Build thumbnail grid
     storyConfig.chapters.forEach((cfg) => {
-      const section = document.createElement("section");
-      section.className = "chapter";
-      section.setAttribute("data-chapter-id", cfg.id);
-
-      const h2 = document.createElement("h2");
-      h2.textContent = cfg.title;
-      section.appendChild(h2);
+      const thumb = document.createElement("button");
+      thumb.className = "thumbnail";
+      thumb.type = "button";
+      thumb.setAttribute("data-chapter-id", cfg.id);
 
       const imgDiv = document.createElement("div");
-      imgDiv.className = "chapter-image";
+      imgDiv.className = "thumbnail-image";
       imgDiv.style.backgroundImage = `url('${cfg.imageUrl}')`;
-      section.appendChild(imgDiv);
+      thumb.appendChild(imgDiv);
 
-      cfg.paragraphs.forEach((text) => {
-        const p = document.createElement("p");
-        p.textContent = text;
-        section.appendChild(p);
-      });
+      const meta = document.createElement("div");
+      meta.className = "thumbnail-meta";
 
-      narrativeEl.insertBefore(section, spacerEl);
+      const ks = document.createElement("div");
+      ks.className = "thumbnail-keystone";
+      ks.textContent = cfg.keystone;
+      meta.appendChild(ks);
+
+      const title = document.createElement("div");
+      title.className = "thumbnail-title";
+      title.textContent = cfg.title;
+      meta.appendChild(title);
+
+      thumb.appendChild(meta);
+      thumbnailGridEl.appendChild(thumb);
     });
-
-    const chapterEls = Array.from(document.querySelectorAll(".chapter"));
 
     const chapters = {};
     storyConfig.chapters.forEach((cfg) => {
       chapters[cfg.id] = {
         center: [cfg.lat, cfg.lng],
         zoom: cfg.zoom,
-        label: cfg.markerLabel
+        label: cfg.markerLabel,
+        keystone: cfg.keystone
       };
     });
-
-    // --------------------------------------------------------------------
-    // ORIGINAL APP LOGIC (behaviour unchanged except for wheel handling)
-    // --------------------------------------------------------------------
 
     const map = L.map("map", {
       center: storyConfig.mapDefaults.center,
@@ -302,20 +415,56 @@
       maxZoom: 19,
     }).addTo(map);
 
+    const baseMarkerIconUrl = "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png";
+    const baseMarkerShadowUrl = "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png";
+
+    function createColorIcon(color) {
+      return L.icon({
+        iconUrl: baseMarkerIconUrl,
+        shadowUrl: baseMarkerShadowUrl,
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41],
+        className: `marker-${color}`
+      });
+    }
+
+    const markerIcons = {
+      red: createColorIcon("red"),
+      green: createColorIcon("green"),
+      blue: createColorIcon("blue"),
+      default: createColorIcon("default")
+    };
+
+    const styleEl = document.createElement("style");
+    styleEl.textContent = `
+      .leaflet-marker-icon.marker-red { filter: hue-rotate(330deg) saturate(1.4); }
+      .leaflet-marker-icon.marker-green { filter: hue-rotate(90deg) saturate(1.4); }
+      .leaflet-marker-icon.marker-blue { filter: hue-rotate(220deg) saturate(1.4); }
+      .leaflet-marker-icon.marker-default { filter: none; }
+    `;
+    document.head.appendChild(styleEl);
+
+    function keystoneToColor(keystone) {
+      if (keystone === "Hedgerow Management") return "red";
+      if (keystone === "Hedgerow Species") return "green";
+      if (keystone === "Stories from Farmers and Landowners") return "blue";
+      return "default";
+    }
+
     const markers = {};
     Object.entries(chapters).forEach(([id, cfg]) => {
-      const marker = L.marker(cfg.center)
+      const colorKey = keystoneToColor(cfg.keystone);
+      const marker = L.marker(cfg.center, {
+        icon: markerIcons[colorKey] || markerIcons.default
+      })
         .addTo(map)
         .bindPopup(`<strong>${cfg.label}</strong>`);
 
+      // Marker click opens the full chapter detail view
       marker.on("click", () => {
-        const chapterEl = document.querySelector(
-          `.chapter[data-chapter-id="${id}"]`
-        );
-        if (chapterEl) {
-          setActiveChapter(id);
-          scrollChapterIntoView(chapterEl);
-        }
+        openChapterDetail(id);
       });
 
       markers[id] = marker;
@@ -327,19 +476,9 @@
       if (chapterId === activeChapterId) return;
       activeChapterId = chapterId;
 
-      chapterEls.forEach((el) => el.classList.remove("active"));
-      const chapterEl = document.querySelector(
-        `.chapter[data-chapter-id="${chapterId}"]`
-      );
-      if (chapterEl) {
-        chapterEl.classList.add("active");
-      }
-
       const cfg = chapters[chapterId];
       if (cfg) {
-        map.flyTo(cfg.center, cfg.zoom, {
-          duration: 1.4,
-        });
+        map.flyTo(cfg.center, cfg.zoom, { duration: 1.4 });
       }
 
       Object.values(markers).forEach((m) => m.closePopup());
@@ -348,51 +487,63 @@
       }
     }
 
-    function scrollChapterIntoView(chapterEl) {
-      const containerRect = narrativeEl.getBoundingClientRect();
-      const chapterRect = chapterEl.getBoundingClientRect();
-      const offset =
-        chapterRect.top -
-        containerRect.top -
-        containerRect.height / 2 +
-        chapterRect.height / 2;
+    function openChapterDetail(chapterId) {
+      const cfg = storyConfig.chapters.find((c) => c.id === chapterId);
+      if (!cfg) return;
 
-      narrativeEl.scrollTop += offset;
+      chapterDetailEl.innerHTML = "";
+
+      const header = document.createElement("div");
+      header.className = "chapter-detail-header";
+
+      const titleEl = document.createElement("h2");
+      titleEl.textContent = cfg.title;
+      header.appendChild(titleEl);
+
+      const closeBtn = document.createElement("button");
+      closeBtn.type = "button";
+      closeBtn.className = "chapter-detail-close";
+      closeBtn.textContent = "CLOSE";
+      closeBtn.addEventListener("click", () => {
+        chapterDetailEl.classList.remove("active");
+        thumbnailGridEl.style.display = "grid";
+      });
+      header.appendChild(closeBtn);
+
+      chapterDetailEl.appendChild(header);
+
+      const imgDiv = document.createElement("div");
+      imgDiv.className = "chapter-detail-image";
+      imgDiv.style.backgroundImage = `url('${cfg.imageUrl}')`;
+      chapterDetailEl.appendChild(imgDiv);
+
+      cfg.paragraphs.forEach((text) => {
+        const p = document.createElement("p");
+        p.textContent = text;
+        chapterDetailEl.appendChild(p);
+      });
+
+      thumbnailGridEl.style.display = "none";
+      chapterDetailEl.classList.add("active");
+
+      setActiveChapter(chapterId);
     }
 
-    narrativeEl.addEventListener("scroll", () => {
-      const containerRect = narrativeEl.getBoundingClientRect();
-      const containerCenterY = containerRect.top + containerRect.height / 2;
-
-      let bestChapterId = null;
-      let bestDistance = Infinity;
-
-      chapterEls.forEach((el) => {
-        const rect = el.getBoundingClientRect();
-        const chapterCenterY = rect.top + rect.height / 2;
-
-        if (rect.bottom < containerRect.top || rect.top > containerRect.bottom) {
-          return;
-        }
-
-        const distance = Math.abs(chapterCenterY - containerCenterY);
-        if (distance < bestDistance) {
-          bestDistance = distance;
-          bestChapterId = el.getAttribute("data-chapter-id");
-        }
-      });
-
-      if (bestChapterId) {
-        setActiveChapter(bestChapterId);
-      }
+    // Thumbnail interactions: hover flyTo, click open detail
+    thumbnailGridEl.addEventListener("mouseover", (event) => {
+      const thumb = event.target.closest(".thumbnail");
+      if (!thumb) return;
+      const chapterId = thumb.getAttribute("data-chapter-id");
+      if (!chapterId) return;
+      setActiveChapter(chapterId);
     });
 
-    chapterEls.forEach((chapter) => {
-      chapter.addEventListener("click", () => {
-        const chapterId = chapter.getAttribute("data-chapter-id");
-        setActiveChapter(chapterId);
-        scrollChapterIntoView(chapter);
-      });
+    thumbnailGridEl.addEventListener("click", (event) => {
+      const thumb = event.target.closest(".thumbnail");
+      if (!thumb) return;
+      const chapterId = thumb.getAttribute("data-chapter-id");
+      if (!chapterId) return;
+      openChapterDetail(chapterId);
     });
 
     setActiveChapter("chapter1");
