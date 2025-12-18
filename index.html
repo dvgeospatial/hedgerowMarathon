@@ -44,7 +44,7 @@
     }
 
     .narrative-header {
-      margin-bottom: 0;
+      margin-bottom: 1.5rem;
       border-bottom: 1px solid #ddd;
       padding-bottom: 0.75rem;
     }
@@ -56,11 +56,6 @@
       margin: 0;
       font-size: 0.95rem;
       color: #666;
-    }
-
-    .narrative-header-spacer {
-      height: 3rem;
-      background: #ffffff;
     }
 
     .thumbnail-grid {
@@ -185,8 +180,6 @@
           A simple scrolling story with placeholder text, images, markers, and a Leaflet map.
         </p>
       </header>
-
-      <div class="narrative-header-spacer"></div>
 
       <div id="thumbnail-container">
         <div id="thumbnail-grid" class="thumbnail-grid"></div>
@@ -364,6 +357,7 @@
     const thumbnailGridEl = document.getElementById("thumbnail-grid");
     const chapterDetailEl = document.getElementById("chapter-detail");
 
+    // Build thumbnail grid
     storyConfig.chapters.forEach((cfg) => {
       const thumb = document.createElement("button");
       thumb.className = "thumbnail";
@@ -406,7 +400,7 @@
       center: storyConfig.mapDefaults.center,
       zoom: storyConfig.mapDefaults.zoom,
       scrollWheelZoom: false,
-      preferCanvas: true
+      preferCanvas: true // canvas renderer for performance [web:21][web:12]
     });
 
     const mapContainer = document.getElementById("map");
@@ -419,41 +413,46 @@
       maxZoom: 19,
     }).addTo(map);
 
-    const lineUrl = "https://firebasestorage.googleapis.com/v0/b/naturecitynorwich.firebasestorage.app/o/Assets%2FhedgerowMarathonSimpleLine.geojson?alt=media&token=06a245dd-6656-4c92-a26e-7574c8549206";
+    // --- REPLACEMENT START: SVG OVERLAY IMPLEMENTATION ---
+    const svgString = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"
+     data-north="52.96459567535271" 
+     data-south="52.773096245936976" 
+     data-east="0.7613503932952882" 
+     data-west="0.5929183959960939">
+    <polyline points="18.9057,100.0000 18.2432,97.3429 14.7016,97.5869 14.7016,95.2892 15.8864,95.3773 16.5616,94.0761 17.3259,93.1138 17.5553,92.2600 21.6574,90.7150 21.9122,90.3626 20.6892,88.9262 18.8547,86.2297 20.0013,85.7826 21.1733,85.4574 22.4473,85.3761 23.1607,85.5251 24.2563,83.8722 23.9760,83.5200 24.9188,82.0163 25.6067,82.1653 25.9889,81.6911 26.4730,81.6505 27.5432,80.9054 24.5876,80.0520 25.8615,78.9413 23.0078,78.6163 20.6128,78.1016 19.0076,77.0045 17.4024,77.2618 17.3769,77.3600 16.1603,77.7054 16.2622,77.8137 13.4085,78.7890 12.9117,78.2370 8.2298,78.7382 6.6501,75.5283 5.1468,71.6824 8.9178,72.6438 3.2868,64.9131 4.2550,64.8183 4.4334,64.9807 6.1405,64.8318 6.5482,64.4664 6.5737,63.8843 8.6120,62.7338 2.9811,60.7306 0.0000,56.4407 3.7964,55.4665 2.9811,53.2204 7.3126,54.4517 8.1279,52.3816 11.8224,53.0581 11.7205,51.6781 14.7016,52.5575 20.0268,51.8675 20.3580,52.3816 20.9950,52.2328 21.3007,52.4899 22.9824,52.2869 22.2944,51.4346 24.8678,50.8935 24.9315,51.0829 27.6960,50.6770 28.0527,51.6984 32.9448,51.5564 32.3078,52.3005 38.0916,52.5304 37.8623,53.2746 42.1428,53.2475 43.6206,53.4099 46.5762,53.1799 46.6272,52.3275 45.3277,52.3140 45.3787,51.1911 43.9009,51.0017 44.7927,50.0006 45.7354,50.3118 49.6847,49.0402 54.8060,46.4566 53.1499,45.7804 52.4874,44.6713 52.2326,43.5488 56.8762,42.7645 56.1564,41.8753 54.2328,42.4162 54.0862,41.0673 55.6787,40.9084 54.9016,39.2520 59.3159,38.8565 59.0866,38.0994 60.9466,37.8966 60.8446,35.5712 60.9211,34.0300 60.6918,32.0565 62.9085,32.0024 62.2205,29.5154 59.4433,29.8803 60.4879,28.8261 60.4879,26.9206 63.8002,26.6638 66.5265,26.4341 69.3547,25.5152 67.9534,23.3532 72.5397,22.8262 72.8709,20.8672 77.1005,21.1644 76.7437,22.6101 81.3555,22.8533 83.1900,22.7046 86.8336,21.9075 86.1966,20.8807 92.1333,20.1106 90.4007,18.9488 92.7702,17.8681 91.9294,17.0981 91.9039,16.1796 90.9612,15.1665 90.8083,13.8429 88.6426,14.0050 87.8273,11.4524 84.8716,10.4936 89.2286,9.3053 89.6618,8.8597 89.5598,8.0900 93.5856,8.1305 93.8149,5.6732 94.7067,5.7272 95.2927,5.7137 95.2927,4.9711 95.7004,4.9306 95.3946,4.2421 96.0316,4.2286 95.9297,3.5536 97.8916,3.6076 97.6495,2.4466 97.4648,2.0281 95.6940,1.7278 94.4965,1.1001 94.5984,0.5467 94.3945,0.2092 94.5538,0.0101 95.4965,0.0877 97.4266,0.6951 97.3629,0.0776 100.0000,0.0000" 
+              style="fill:none;stroke:#237025;stroke-width:5;stroke-opacity:1.0;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke" />
+</svg>`;
 
-    const lineRenderer = L.canvas();
-    let routeLayer = null;
-    let chapterBounds = {};
+    // Parse SVG string to DOM element
+    const parser = new DOMParser();
+    const svgDoc = parser.parseFromString(svgString, "image/svg+xml");
+    const svgElement = svgDoc.documentElement;
 
-    fetch(lineUrl)
-      .then(response => response.json())
-      .then(routeLines => {
-        routeLayer = L.geoJSON(routeLines, {
-          style: {
-            color: "#ff6600",
-            weight: 3,
-            opacity: 0.8,
-            lineCap: "round",
-            lineJoin: "round"
-          },
-          interactive: false,
-          noClip: false,
-          renderer: lineRenderer
-        }).addTo(map);
+    // Extract bounds from data attributes (South-West to North-East)
+    const south = parseFloat(svgElement.getAttribute('data-south'));
+    const west = parseFloat(svgElement.getAttribute('data-west'));
+    const north = parseFloat(svgElement.getAttribute('data-north'));
+    const east = parseFloat(svgElement.getAttribute('data-east'));
+    const svgBounds = L.latLngBounds([[south, west], [north, east]]);
 
-        const routeBounds = routeLayer.getBounds();
-        Object.entries(chapters).forEach(([id, cfg]) => {
-          const padding = 0.01;
-          const b = L.latLngBounds(
-            [cfg.center[0] - padding, cfg.center[1] - padding],
-            [cfg.center[0] + padding, cfg.center[1] + padding]
-          );
-          chapterBounds[id] = b;
-        });
-      })
-      .catch(err => {
-        console.error("Error loading route GeoJSON:", err);
-      });
+    // Add SVG Overlay
+    L.svgOverlay(svgElement, svgBounds, {
+      opacity: 0.8,
+      interactive: false
+    }).addTo(map);
+
+    // Compute simple per-chapter bounds for animation
+    const chapterBounds = {};
+    Object.entries(chapters).forEach(([id, cfg]) => {
+      const padding = 0.01;
+      const b = L.latLngBounds(
+        [cfg.center[0] - padding, cfg.center[1] - padding],
+        [cfg.center[0] + padding, cfg.center[1] + padding]
+      );
+      chapterBounds[id] = b;
+    });
+    // --- REPLACEMENT END ---
 
     const baseMarkerIconUrl = "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png";
     const baseMarkerShadowUrl = "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png";
@@ -494,9 +493,6 @@
     }
 
     const markers = {};
-    let activeChapterId = null;
-    let activeLabelId = null;
-
     Object.entries(chapters).forEach(([id, cfg]) => {
       const colorKey = keystoneToColor(cfg.keystone);
       const marker = L.marker(cfg.center, {
@@ -509,30 +505,18 @@
         openChapterDetail(id);
       });
 
-      marker.on("mouseover", () => {
-        activeLabelId = id;
-        Object.values(markers).forEach((m) => m.closePopup());
-        marker.openPopup();
-      });
-
-      marker.on("mouseout", () => {
-        if (activeChapterId !== id) {
-          if (activeLabelId === id) {
-            activeLabelId = null;
-          }
-          marker.closePopup();
-        }
-      });
-
       markers[id] = marker;
     });
 
+    let activeChapterId = null;
+
+    // Helper to decide whether two chapters are "far apart"
     function isFarMove(fromCenter, toCenter) {
       if (!fromCenter || !toCenter) return false;
       const dLat = fromCenter[0] - toCenter[0];
       const dLng = fromCenter[1] - toCenter[1];
       const dist = Math.sqrt(dLat * dLat + dLng * dLng);
-      return dist > 0.05;
+      return dist > 0.05; // tweak threshold as needed
     }
 
     function setActiveChapter(chapterId) {
@@ -547,15 +531,16 @@
         const far = prevCfg && isFarMove(prevCfg.center, cfg.center);
 
         if (far && chapterBounds[chapterId]) {
+          // For big jumps, use flyToBounds for smoother long animation [web:108]
           map.flyToBounds(chapterBounds[chapterId], {
             duration: 1.6
           });
         } else {
+          // For nearby moves, use flyTo center/zoom
           map.flyTo(cfg.center, cfg.zoom, { duration: 1.4 });
         }
       }
 
-      activeLabelId = chapterId;
       Object.values(markers).forEach((m) => m.closePopup());
       if (markers[chapterId]) {
         markers[chapterId].openPopup();
@@ -566,9 +551,9 @@
       const cfg = chapters[chapterId];
       if (!cfg) return;
 
+      // Hover uses a small zoom delta; keep using flyTo for responsiveness
       map.flyTo(cfg.center, storyConfig.mapDefaults.zoom, { duration: 1.0 });
 
-      activeLabelId = chapterId;
       Object.values(markers).forEach((m) => m.closePopup());
       if (markers[chapterId]) {
         markers[chapterId].openPopup();
@@ -595,9 +580,6 @@
       closeBtn.addEventListener("click", () => {
         chapterDetailEl.classList.remove("active");
         thumbnailGridEl.style.display = "grid";
-        activeChapterId = null;
-        activeLabelId = null;
-        Object.values(markers).forEach((m) => m.closePopup());
       });
       header.appendChild(closeBtn);
 
@@ -626,14 +608,6 @@
       const chapterId = thumb.getAttribute("data-chapter-id");
       if (!chapterId) return;
       hoverChapter(chapterId);
-    });
-
-    thumbnailGridEl.addEventListener("mouseout", (event) => {
-      const related = event.relatedTarget;
-      if (!thumbnailGridEl.contains(related) && !chapterDetailEl.classList.contains("active")) {
-        activeLabelId = null;
-        Object.values(markers).forEach((m) => m.closePopup());
-      }
     });
 
     thumbnailGridEl.addEventListener("click", (event) => {
