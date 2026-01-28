@@ -750,6 +750,10 @@
         remove3DOverlay(); // Clear 3D view on close
         chapterDetailEl.classList.remove("active");
         thumbnailGridEl.style.display = "grid";
+        // --- FIX START ---
+        activeChapterId = null; 
+        map.flyTo(storyConfig.mapDefaults.center, storyConfig.mapDefaults.zoom, { duration: 1.4 });
+        // --- FIX END ---
       });
       header.appendChild(closeBtn);
 
