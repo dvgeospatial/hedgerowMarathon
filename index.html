@@ -27,7 +27,7 @@
       overflow: hidden;
     }
 
-    /* --- NEW CSS CLASS FOR GREYSCALE TILES --- */
+    /* --- GREYSCALE TILES --- */
     .grayscale-tile {
         filter: grayscale(100%);
     }
@@ -153,7 +153,7 @@
       line-height: 1.5;
     }
 
-    /* --- NEW BUTTON STYLE --- */
+    /* --- BUTTON STYLES --- */
     .btn-explore {
       display: inline-block;
       margin-top: 0.5rem;
@@ -171,13 +171,33 @@
       background-color: #1a561c;
     }
 
+    /* --- NEW CLOSE 3D BUTTON STYLE --- */
+    .btn-close-3d {
+      position: absolute;
+      top: 20px;
+      right: 600px;
+      z-index: 2001; /* Above the iframe (2000) */
+      padding: 0.6rem 1.2rem;
+      background-color: #fff;
+      color: #333;
+      border: 2px solid #ccc;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .btn-close-3d:hover {
+      background-color: #f0f0f0;
+      border-color: #bbb;
+    }
+
     #map {
       flex: 1;
       height: 100vh;
-      position: relative; /* Ensure absolute children (iframe) position correctly */
+      position: relative; 
     }
 
-    /* --- NEW IFRAME OVERLAY STYLE --- */
+    /* --- IFRAME OVERLAY STYLE --- */
     #ctx-3d-frame {
       position: absolute;
       top: 0;
@@ -254,7 +274,7 @@
           lng: 0.624161,
           zoom: 14,
           markerLabel: "Hedge 1",
-          exploreUrl: "https://littlemassinghamlandcoverveg--cesiumsbi3d.netlify.app" // ADDED URL
+          exploreUrl: "https://littlemassinghamlandcoverveg--cesiumsbi3d.netlify.app" 
         },
         {
           id: "chapter2",
@@ -437,7 +457,7 @@
       center: storyConfig.mapDefaults.center,
       zoom: storyConfig.mapDefaults.zoom,
       scrollWheelZoom: false,
-      preferCanvas: true // canvas renderer for performance
+      preferCanvas: true 
     });
 
     const mapContainer = document.getElementById("map");
@@ -445,14 +465,14 @@
       narrativeEl.scrollTop += event.deltaY;
     });
 
-    // --- TILE LAYER WITH GREYSCALE CLASS APPLIED ---
+    // --- TILE LAYER ---
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "&copy; OpenStreetMap contributors",
       maxZoom: 19,
-      className: 'grayscale-tile' // This applies the CSS filter
+      className: 'grayscale-tile'
     }).addTo(map);
 
-    // --- EXISTING SVG OVERLAY IMPLEMENTATION ---
+    // --- SVG OVERLAY ---
     const svgString = `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"
      data-north="52.96459567535271" 
@@ -463,25 +483,21 @@
               style="fill:none;stroke:#237025;stroke-width:5;stroke-opacity:1.0;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke" />
 </svg>`;
 
-    // Parse SVG string to DOM element
     const parser = new DOMParser();
     const svgDoc = parser.parseFromString(svgString, "image/svg+xml");
     const svgElement = svgDoc.documentElement;
 
-    // Extract bounds from data attributes (South-West to North-East)
     const south = parseFloat(svgElement.getAttribute('data-south'));
     const west = parseFloat(svgElement.getAttribute('data-west'));
     const north = parseFloat(svgElement.getAttribute('data-north'));
     const east = parseFloat(svgElement.getAttribute('data-east'));
     const svgBounds = L.latLngBounds([[south, west], [north, east]]);
 
-    // Add SVG Overlay
     L.svgOverlay(svgElement, svgBounds, {
       opacity: 0.8,
       interactive: false
     }).addTo(map);
 
-    // Compute simple per-chapter bounds for animation
     const chapterBounds = {};
     Object.entries(chapters).forEach(([id, cfg]) => {
       const padding = 0.01;
@@ -492,11 +508,9 @@
       chapterBounds[id] = b;
     });
 
-    // --- REPLACEMENT START: NEW TREE LOCATIONS LOGIC ---
+    // --- TREE LOCATIONS ---
     const treeLocations = {"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0.6214141845703126,52.77597800218781]},"properties":{"created_at":"2025-12-18T13:02:21.895Z"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.6251907348632814,52.79061749215145]},"properties":{"created_at":"2025-12-18T13:02:23.593Z"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.635662078857422,52.80307275348456]},"properties":{"created_at":"2025-12-18T13:02:26.645Z"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.6069946289062501,52.81604319154934]},"properties":{"created_at":"2025-12-18T13:02:28.093Z"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.6052780151367189,52.831810030925936]},"properties":{"created_at":"2025-12-18T13:02:31.071Z"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.5987548828125,52.84777849467985]},"properties":{"created_at":"2025-12-18T13:02:31.838Z"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.6025314331054689,52.859180945520826]},"properties":{"created_at":"2025-12-18T13:02:32.624Z"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.6284523010253907,52.867057252851666]},"properties":{"created_at":"2025-12-18T13:02:33.886Z"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.6626129150390626,52.861875632606655]},"properties":{"created_at":"2025-12-18T13:02:35.100Z"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.6723976135253907,52.867575380841906]},"properties":{"created_at":"2025-12-18T13:02:35.870Z"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.6900787353515626,52.89212755009734]},"properties":{"created_at":"2025-12-18T13:02:40.460Z"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.679779052734375,52.8821840425931]},"properties":{"created_at":"2025-12-18T13:02:41.745Z"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.7099914550781251,52.91780438950354]},"properties":{"created_at":"2025-12-18T13:02:43.832Z"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.7487869262695314,52.931257944342306]},"properties":{"created_at":"2025-12-18T13:02:44.783Z"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.7515335083007812,52.95463648146399]},"properties":{"created_at":"2025-12-18T13:02:46.386Z"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[0.751190185546875,52.96228865548326]},"properties":{"created_at":"2025-12-18T13:02:48.327Z"}}]};
 
-    // The Tree SVG Icon URL (encoded as Data URI or logical reference)
-    // We will use L.divIcon to render the raw SVG provided in the prompt
     const treeSvgString = `<svg xmlns="http://www.w3.org/2000/svg" width="195" height="215" viewBox="0 0 195 215" version="1.1">
   <g fill="#4f824f" stroke="none" fill-rule="evenodd">
     <path d="M 117.00,54.50 L 108.50,45.00 L 105.50,39.00 L 106.50,33.00 L 102.00,25.50 L 87.50,29.00 L 87.50,23.00 L 82.50,20.00 L 82.50,17.00 L 88.00,11.50 L 107.00,11.50 L 113.50,16.00 L 116.50,23.00 L 117.50,36.00 L 122.50,47.00 L 120.50,53.00 L 117.00,54.50 Z" />
@@ -526,17 +540,15 @@
     const treeIcon = L.divIcon({
         className: 'custom-tree-icon',
         html: treeSvgString,
-        iconSize: [30, 30], // Adjust size as needed
-        iconAnchor: [15, 30] // Adjust anchor to center-bottom of the tree
+        iconSize: [30, 30], 
+        iconAnchor: [15, 30] 
     });
 
-    // Add GeoJSON layer with custom SVG marker
     L.geoJSON(treeLocations, {
         pointToLayer: function (feature, latlng) {
             return L.marker(latlng, { icon: treeIcon });
         }
     }).addTo(map);
-    // --- REPLACEMENT END ---
 
     const baseMarkerIconUrl = "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png";
     const baseMarkerShadowUrl = "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png";
@@ -566,7 +578,6 @@
       .leaflet-marker-icon.marker-green { filter: hue-rotate(90deg) saturate(1.4); }
       .leaflet-marker-icon.marker-blue { filter: hue-rotate(220deg) saturate(1.4); }
       .leaflet-marker-icon.marker-default { filter: none; }
-      /* Style adjustment for the raw SVG inside the divIcon to make it fit */
       .custom-tree-icon svg { width: 100%; height: 100%; }
     `;
     document.head.appendChild(styleEl);
@@ -596,13 +607,12 @@
 
     let activeChapterId = null;
 
-    // Helper to decide whether two chapters are "far apart"
     function isFarMove(fromCenter, toCenter) {
       if (!fromCenter || !toCenter) return false;
       const dLat = fromCenter[0] - toCenter[0];
       const dLng = fromCenter[1] - toCenter[1];
       const dist = Math.sqrt(dLat * dLat + dLng * dLng);
-      return dist > 0.05; // tweak threshold as needed
+      return dist > 0.05; 
     }
 
     function setActiveChapter(chapterId) {
@@ -617,12 +627,10 @@
         const far = prevCfg && isFarMove(prevCfg.center, cfg.center);
 
         if (far && chapterBounds[chapterId]) {
-          // For big jumps, use flyToBounds for smoother long animation
           map.flyToBounds(chapterBounds[chapterId], {
             duration: 1.6
           });
         } else {
-          // For nearby moves, use flyTo center/zoom
           map.flyTo(cfg.center, cfg.zoom, { duration: 1.4 });
         }
       }
@@ -637,7 +645,6 @@
       const cfg = chapters[chapterId];
       if (!cfg) return;
 
-      // Hover uses a small zoom delta; keep using flyTo for responsiveness
       map.flyTo(cfg.center, storyConfig.mapDefaults.zoom, { duration: 1.0 });
 
       Object.values(markers).forEach((m) => m.closePopup());
@@ -646,10 +653,13 @@
       }
     }
 
-    // Helper to clear specific 3D frame overlay
+    // Helper to clear specific 3D frame overlay and the button
     function remove3DOverlay() {
       const existingFrame = document.getElementById("ctx-3d-frame");
       if (existingFrame) existingFrame.remove();
+
+      const existingBtn = document.getElementById("ctx-3d-close-btn");
+      if (existingBtn) existingBtn.remove();
     }
 
     function openChapterDetail(chapterId) {
@@ -696,11 +706,21 @@
         btn.className = "btn-explore";
         btn.textContent = "Explore in 3D";
         btn.onclick = () => {
-          // Open URL in map frame (create an overlay iframe)
+          const mapContainer = document.getElementById("map");
+
+          // 1. Open URL in map frame (overlay iframe)
           const iframe = document.createElement("iframe");
           iframe.id = "ctx-3d-frame";
           iframe.src = cfg.exploreUrl;
-          document.getElementById("map").appendChild(iframe);
+          mapContainer.appendChild(iframe);
+
+          // 2. Add the CLOSE button specifically for the 3D map
+          const close3dBtn = document.createElement("button");
+          close3dBtn.id = "ctx-3d-close-btn";
+          close3dBtn.className = "btn-close-3d";
+          close3dBtn.textContent = "Close 3D View";
+          close3dBtn.onclick = remove3DOverlay; // Call helper to remove both
+          mapContainer.appendChild(close3dBtn);
         };
         chapterDetailEl.appendChild(btn);
       }
