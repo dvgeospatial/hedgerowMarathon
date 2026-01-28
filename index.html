@@ -192,6 +192,46 @@
       border-color: #bbb;
     }
 
+    /* --- VIDEO MODAL STYLES --- */
+    .video-modal {
+      display: none; /* Hidden by default */
+      position: fixed;
+      z-index: 3000; /* Sit on top of everything including 3D map */
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.8); /* Black w/ opacity */
+      justify-content: center;
+      align-items: center;
+    }
+
+    .video-modal-content {
+      position: relative;
+      background-color: #000;
+      padding: 0;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .video-close-btn {
+      position: absolute;
+      top: -30px;
+      right: -10px;
+      color: #fff;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      line-height: 1;
+    }
+    
+    .video-close-btn:hover {
+      color: #ccc;
+    }
+
     #map {
       flex: 1;
       height: 100vh;
@@ -246,6 +286,23 @@
     <div id="map"></div>
   </div>
 
+  <!-- Video Modal Container -->
+  <div id="video-modal" class="video-modal">
+    <div class="video-modal-content">
+      <span class="video-close-btn">&times;</span>
+      <iframe 
+        id="video-frame" 
+        width="315" 
+        height="560" 
+        src="" 
+        title="YouTube video player" 
+        frameborder="0" 
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+        allowfullscreen>
+      </iframe>
+    </div>
+  </div>
+
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
@@ -268,7 +325,15 @@
           title: "Hedge 1",
           imageUrl: "https://upload.wikimedia.org/wikipedia/commons/6/65/Flowering_gorse_in_hedgerow_-_geograph.org.uk_-_1151811.jpg",
           paragraphs: [
-            "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
+            "The North Norfolk Coastal Group (NNCG) Hedgerow Marathon starts its 26.2 mile journey on the Little Massingham Estate in West Norfolk.",
+
+"The 2,000 acre estate was bought by the Birkbeck family in the 19th century and remains in the family to this day. In recent years Olly Birkbeck, the current incumbent, has been following an ambitious plan to restore much of the estate to a more natural environment, creating a diverse mosaic of natural habitat for a range of species. Much of the hedge line across the estate reflects this ambition, with some hedgerows left uncut for many years, some re-laid and some managed to attract certain key species - for example high hedges which have been cut at an angle to encourage nesting birds and discourage predatory birds who cannot perch on their sloped tops, as well as  hedgerow trees to attract Turtle Doves.",
+
+"The hedgerow line across the Little Massingham Estate is a mix of untouched 50 metre wide hedgerow that is teeming with life, through lines of hedging that has been over-trimmed, to a stretch of laid hedgerow that has been created by a band of enthusiastic volunteers to a section of hedging that is now home to the iconic and endangered Turtle Dove.",
+
+"Much of Olly's attitude towards the relationship between farming and nature can be traced back to the previous generations, most recently the influence of his Great Aunt Mary, an established local legend <a href='#' onclick='openVideoModal(\"https://www.youtube.com/embed/6ux9iB9WmGk\"); return false;' style='color:#237025; font-weight:bold;'>(Watch Video)</a>",
+
+
             "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
           ],
           lat: 52.772509,
@@ -283,7 +348,7 @@
           title: "Hedge 2",
           imageUrl: "https://upload.wikimedia.org/wikipedia/commons/e/eb/Neatly_trimmed_hedgerows_-_geograph.org.uk_-_615043.jpg",
           paragraphs: [
-            "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
+            "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk's light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
             "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
           ],
           lat: 52.812357,
@@ -297,7 +362,7 @@
           title: "Hedge 3",
           imageUrl: "https://upload.wikimedia.org/wikipedia/commons/e/eb/Neatly_trimmed_hedgerows_-_geograph.org.uk_-_615043.jpg",
           paragraphs: [
-            "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
+            "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk's light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
             "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
           ],
           lat: 52.821898,
@@ -311,7 +376,7 @@
           title: "Hedge 4",
           imageUrl: "https://upload.wikimedia.org/wikipedia/commons/6/69/Hedgerow_separating_fields_-_geograph.org.uk_-_715273.jpg",
           paragraphs: [
-            "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
+            "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk's light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
             "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
           ],
           lat: 52.845535,
@@ -325,7 +390,7 @@
           title: "Hedge 5",
           imageUrl: "https://upload.wikimedia.org/wikipedia/commons/e/eb/Neatly_trimmed_hedgerows_-_geograph.org.uk_-_615043.jpg",
           paragraphs: [
-            "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
+            "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk's light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
             "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
           ],
           lat: 52.864187,
@@ -339,7 +404,7 @@
           title: "Hedge 6",
           imageUrl: "https://upload.wikimedia.org/wikipedia/commons/4/4d/Field_and_hedgerow%2C_Harling_-_geograph.org.uk_-_7915932.jpg",
           paragraphs: [
-            "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
+            "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk's light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
             "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
           ],
           lat: 52.875374,
@@ -353,7 +418,7 @@
           title: "Hedge 7",
           imageUrl: "https://upload.wikimedia.org/wikipedia/commons/e/eb/Neatly_trimmed_hedgerows_-_geograph.org.uk_-_615043.jpg",
           paragraphs: [
-            "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
+            "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk's light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
             "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
           ],
           lat: 52.910161,
@@ -367,7 +432,7 @@
           title: "Hedge 8",
           imageUrl: "https://upload.wikimedia.org/wikipedia/commons/4/42/Hedgerow_south_of_Paston_Green_-_geograph.org.uk_-_5886102.jpg",
           paragraphs: [
-            "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
+            "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk's light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
             "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
           ],
           lat: 52.92175,
@@ -381,7 +446,7 @@
           title: "Hedge 9",
           imageUrl: "https://upload.wikimedia.org/wikipedia/commons/e/eb/Neatly_trimmed_hedgerows_-_geograph.org.uk_-_615043.jpg",
           paragraphs: [
-            "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
+            "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk's light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
             "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
           ],
           lat: 52.946987,
@@ -395,7 +460,7 @@
           title: "Hedge 10",
           imageUrl: "https://upload.wikimedia.org/wikipedia/commons/e/eb/Neatly_trimmed_hedgerows_-_geograph.org.uk_-_615043.jpg",
           paragraphs: [
-            "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk’s light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
+            "Hedgerows in Norfolk are vital ribbons of habitat threading through an intensively farmed landscape, providing food, shelter and nesting sites for farmland birds, small mammals and countless insects while linking up woods, ponds and grasslands as safe wildlife corridors. They also help protect Norfolk's light soils from erosion, slow down run-off and filter water, and, as living historic boundaries, they shape the character of lanes and fields, making their careful protection and sympathetic management a key part of nature recovery in the county.",
             "Photo credit: Evelyn Simak / Hedgerow and trees / CC BY-SA 2.0"
           ],
           lat: 52.963552,
@@ -697,7 +762,7 @@
 
       cfg.paragraphs.forEach((text) => {
         const p = document.createElement("p");
-        p.textContent = text;
+        p.innerHTML = text; // Changed from textContent to innerHTML to support links
         chapterDetailEl.appendChild(p);
       });
 
@@ -749,6 +814,31 @@
     });
 
     map.setView(storyConfig.mapDefaults.center, storyConfig.mapDefaults.zoom);
+
+    // --- VIDEO MODAL LOGIC ---
+    const modal = document.getElementById("video-modal");
+    const videoFrame = document.getElementById("video-frame");
+    const closeBtn = document.querySelector(".video-close-btn");
+
+    // Function called by the link in the text
+    window.openVideoModal = function(videoUrl) {
+      videoFrame.src = videoUrl;
+      modal.style.display = "flex";
+    };
+
+    // Close Modal logic
+    closeBtn.onclick = function() {
+      modal.style.display = "none";
+      videoFrame.src = ""; // Stop video playback
+    };
+
+    // Close if clicking outside the video
+    window.onclick = function(event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+        videoFrame.src = ""; // Stop video playback
+      }
+    };
   </script>
 </body>
 </html>
